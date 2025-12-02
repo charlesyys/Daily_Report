@@ -2,9 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import yfinance as yf
 import datetime
-import json
 
-# === 1. 全球主要股市（即時價格） ===
+# === 全球主要股市即時價格 ===
 markets = {
     "道瓊指數 (DJI)": "^DJI",
     "NASDAQ": "^IXIC",
@@ -20,14 +19,14 @@ def fetch_markets():
     for name, symbol in markets.items():
         ticker = yf.Ticker(symbol)
         try:
-            price = ticker.fast_info["lastPrice"]  # 即時價格
+            price = ticker.fast_info["lastPrice"]
             price = round(price, 2)
             rows += f"<li>{name}: {price}</li>"
         except:
             rows += f"<li>{name}: 讀取失敗</li>"
     return rows
 
-# === 2. 國際重大新聞（Google News RSS） ===
+# === 國際重大新聞（Google News RSS） ===
 def fetch_news():
     url = "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
     r = requests.get(url, timeout=10)
@@ -40,7 +39,7 @@ def fetch_news():
         news_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return news_html
 
-# === 3. 政經局勢（Reuters World） ===
+# === 政經局勢（Reuters World） ===
 def fetch_geo():
     url = "https://www.reuters.com/world/"
     r = requests.get(url, timeout=10)
@@ -53,17 +52,17 @@ def fetch_geo():
         geo_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return geo_html
 
-# === 4. 更新 index.html ===
+# === 更新 index.html ===
 def update_html():
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     with open("index.html", "r", encoding="utf-8") as f:
         html = f.read()
 
-    # 先刪掉原本資料（如果有）
+    # 刪除舊資料區塊
     import re
     html = re.sub(r"<h2>📈 全球股市指數.*</body>", "</body>", html, flags=re.S)
 
-    # 插入新資料
+    # 新資料區塊
     new_content = f"""
 <h2>📈 全球股市指數（更新時間：{now}）</h2>
 <ul>
@@ -82,10 +81,10 @@ def update_html():
 </body>
 """
     html = html.replace("</body>", new_content)
+
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
 
 if __name__ == "__main__":
     update_html()
     print("首頁更新完成 ✅")
-
