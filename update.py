@@ -88,7 +88,7 @@ def fetch_geo():
 # === 更新首頁 ===
 def update_html():
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    html_path = "D:/Python/20251202_build_web/index.htm"
+    html_path = "index.html"
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
 
