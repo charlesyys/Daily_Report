@@ -1,10 +1,10 @@
 import requests
+from bs4 import BeautifulSoup
+import yfinance as yf
 import datetime
 import re
-import yfinance as yf
-import xml.etree.ElementTree as ET
 
-# === 全球股市即時價格 ===
+# === 全球主要股市即時價格 ===
 markets = {
     "道瓊指數 (DJI)": "^DJI",
     "NASDAQ": "^IXIC",
@@ -18,103 +18,103 @@ markets = {
 def fetch_markets():
     rows = ""
     for name, symbol in markets.items():
-        ticker = yf.Ticker(symbol)
         try:
-            price = ticker.fast_info["lastPrice"]
-            price = round(price, 2)
-            rows += f"<li>{name}: {price}</li>\n"
+            ticker = yf.Ticker(symbol)
+            price = round(ticker.fast_info["lastPrice"], 2)
+            rows += f"<li>{name}: {price}</li>"
         except:
-            rows += f"<li>{name}: 讀取失敗</li>\n"
+            rows += f"<li>{name}: 讀取失敗</li>"
     return rows
 
-# === 英文新聞 RSS ===
-RSS_LIST_EN = [
-    ("BBC World", "http://feeds.bbci.co.uk/news/world/rss.xml"),
-    ("CNN Top Stories", "http://rss.cnn.com/rss/edition.rss"),
-    # Reuters 官方 HTTPS RSS，如果解析失敗會跳過
-    ("Reuters World", "https://www.reuters.com/rssFeed/worldNews")
-]
-
-def fetch_rss_news(rss_list):
-    html = ""
-    for name, url in rss_list:
-        try:
-            r = requests.get(url, timeout=10)
-            r.encoding = r.apparent_encoding
-            root = ET.fromstring(r.text)
-            items = root.findall(".//item")[:20]
-            for item in items:
-                title = item.find("title").text if item.find("title") is not None else "無標題"
-                link = item.find("link").text if item.find("link") is not None else "#"
-                html += f'<li><a href="{link}" target="_blank">{title}</a> <small>({name})</small></li>\n'
-        except Exception as e:
-            html += f"<li>{name} 讀取失敗: {e}</li>\n"
-    return html
-
-# === 中文新聞 RSS (中央社國際) ===
-def fetch_cn_news():
-    name = "中央社國際"
-    url = "https://feeds.feedburner.com/rsscna/intworld"
-    html = ""
+# === 英文新聞 (Google News RSS) ===
+def fetch_news_en():
+    url = "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"
     try:
         r = requests.get(url, timeout=10)
-        r.encoding = r.apparent_encoding
-        root = ET.fromstring(r.text)
-        items = root.findall(".//item")[:20]
+        soup = BeautifulSoup(r.text, "html.parser")
+        items = soup.find_all("item")[:20]
+        news_list = []
         for item in items:
-            title = item.find("title").text if item.find("title") is not None else "無標題"
-            link = item.find("link").text if item.find("link") is not None else "#"
-            html += f'<li><a href="{link}" target="_blank">{title}</a> <small>({name})</small></li>\n'
-    except Exception as e:
-        html += f"<li>{name} 讀取失敗: {e}</li>\n"
-    return html
+            title = item.title.text.strip()
+            link = item.link.text.strip()
+            news_list.append(f'<li><a href="{link}" target="_blank">{title}</a></li>')
+        return "\n".join(news_list)
+    except:
+        return "<li>英文新聞讀取失敗</li>"
 
-# === 政經摘要 ===
-def fetch_geo():
+# === 中文新聞 (聯合新聞網國際 RSS) ===
+def fetch_news_zh():
+    url = "https://udn.com/rssfeed/news/1/國際"
     try:
-        r = requests.get("https://www.reuters.com/world/", timeout=10)
-        r.encoding = r.apparent_encoding
-        soup_text = r.text
-        links = re.findall(r'href="(/world/[^"]+)"', soup_text)[:8]
+        r = requests.get(url, timeout=10)
+        soup = BeautifulSoup(r.text, "xml")
+        items = soup.find_all("item")[:20]
+        news_list = []
+        for item in items:
+            title = item.title.text.strip()
+            link = item.link.text.strip()
+            news_list.append(f'<li><a href="{link}" target="_blank">{title}</a></li>')
+        return "\n".join(news_list)
+    except:
+        return "<li>中文新聞讀取失敗</li>"
+
+# === 政經局勢 (Reuters World) ===
+def fetch_geo():
+    url = "https://www.reuters.com/world/"
+    try:
+        r = requests.get(url, timeout=10)
+        soup = BeautifulSoup(r.text, "html.parser")
+        articles = soup.select("a[href*='/world/']")[:20]
         geo_html = ""
-        for link in links:
-            url = "https://www.reuters.com" + link
-            title = link.split("/")[-1].replace("-", " ").title()
-            geo_html += f'<li><a href="{url}" target="_blank">{title}</a></li>\n'
+        for a in articles:
+            title = a.get_text(strip=True)
+            link = "https://www.reuters.com" + a.get("href")
+            geo_html += f'<li><a href="{link}" target="_blank">{title}</a></li>'
         return geo_html
     except:
-        return "<li>Reuters 讀取失敗</li>"
+        return "<li>政經局勢讀取失敗</li>"
 
-# === 更新首頁 ===
+# === 更新 index.htm ===
 def update_html():
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     html_path = "index.htm"
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
 
-    import re
-    html = re.sub(r"<h2>📈 全球股市指數.*</body>", "</body>", html, flags=re.S)
+    # 刪除舊資料
+    html = re.sub(r"<h2>📈 全球股市指數.*?<\/ul>", "", html, flags=re.S)
+    html = re.sub(r"<h2>📰 國際重大新聞（英文）.*?<\/ul>", "", html, flags=re.S)
+    html = re.sub(r"<h2>📰 國際重大新聞（中文）.*?<\/ul>", "", html, flags=re.S)
+    html = re.sub(r"<h2>🌐 政經局勢摘要.*?<\/ul>", "", html, flags=re.S)
 
-    new_block = f"""
+    # 新內容
+    new_content = f"""
 <h2>📈 全球股市指數（更新時間：{now}）</h2>
-<ul>{fetch_markets()}</ul>
+<ul>
+{fetch_markets()}
+</ul>
 
 <h2>📰 國際重大新聞（英文）</h2>
-<ul>{fetch_rss_news(RSS_LIST_EN)}</ul>
+<ul>
+{fetch_news_en()}
+</ul>
 
 <h2>📰 國際重大新聞（中文）</h2>
-<ul>{fetch_cn_news()}</ul>
+<ul>
+{fetch_news_zh()}
+</ul>
 
 <h2>🌐 政經局勢摘要</h2>
-<ul>{fetch_geo()}</ul>
+<ul>
+{fetch_geo()}
+</ul>
 </body>
 """
-    html = html.replace("</body>", new_block)
+    html = html.replace("</body>", new_content)
 
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print("首頁更新完成 ✅")
-
 if __name__ == "__main__":
     update_html()
+    print("首頁更新完成 ✅")
