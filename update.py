@@ -29,7 +29,10 @@ def fetch_markets():
 # === 國際重大新聞（Google News RSS） ===
 def fetch_news():
     url = "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
-    r = requests.get(url, timeout=10)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+    }
+    r = requests.get(url, headers=headers, timeout=10)
     soup = BeautifulSoup(r.text, "html.parser")
     items = soup.find_all("item")[:8]
     news_html = ""
@@ -38,6 +41,7 @@ def fetch_news():
         link = item.link.text
         news_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return news_html
+
 
 # === 政經局勢（Reuters World） ===
 def fetch_geo():
