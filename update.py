@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 import datetime
 
-# === 全球主要股市即時價格 ===
+# === 1. 全球主要股市即時價格 ===
 markets = {
     "道瓊指數 (DJI)": "^DJI",
     "NASDAQ": "^IXIC",
@@ -26,7 +26,7 @@ def fetch_markets():
             rows += f"<li>{name}: 讀取失敗</li>"
     return rows
 
-# === 國際重大新聞（Google News RSS） ===
+# === 2. 國際重大新聞（Google News RSS） ===
 def fetch_news():
     url = "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
     headers = {
@@ -42,11 +42,13 @@ def fetch_news():
         news_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return news_html
 
-
-# === 政經局勢（Reuters World） ===
+# === 3. 政經局勢（Reuters World） ===
 def fetch_geo():
     url = "https://www.reuters.com/world/"
-    r = requests.get(url, timeout=10)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+    }
+    r = requests.get(url, headers=headers, timeout=10)
     soup = BeautifulSoup(r.text, "html.parser")
     articles = soup.select("a[href*='/world/']")[:8]
     geo_html = ""
@@ -56,7 +58,7 @@ def fetch_geo():
         geo_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return geo_html
 
-# === 更新 index.html ===
+# === 4. 更新 index.html ===
 def update_html():
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     with open("index.html", "r", encoding="utf-8") as f:
@@ -66,7 +68,7 @@ def update_html():
     import re
     html = re.sub(r"<h2>📈 全球股市指數.*</body>", "</body>", html, flags=re.S)
 
-    # 新資料區塊
+    # 插入新資料
     new_content = f"""
 <h2>📈 全球股市指數（更新時間：{now}）</h2>
 <ul>
