@@ -2,8 +2,9 @@ import requests
 from bs4 import BeautifulSoup
 import yfinance as yf
 import datetime
+import json
 
-# === 1. 抓取全球股市 ===
+# === 1. 全球主要股市（即時價格） ===
 markets = {
     "道瓊指數 (DJI)": "^DJI",
     "NASDAQ": "^IXIC",
@@ -17,17 +18,20 @@ markets = {
 def fetch_markets():
     rows = ""
     for name, symbol in markets.items():
-        data = yf.Ticker(symbol).history(period="1d")
-        price = round(data["Close"].iloc[-1], 2)
-        rows += f"<li>{name}: {price}</li>"
+        ticker = yf.Ticker(symbol)
+        try:
+            price = ticker.fast_info["lastPrice"]  # 即時價格
+            price = round(price, 2)
+            rows += f"<li>{name}: {price}</li>"
+        except:
+            rows += f"<li>{name}: 讀取失敗</li>"
     return rows
 
-# === 2. 抓國際新聞 ===
+# === 2. 國際重大新聞（Google News RSS） ===
 def fetch_news():
     url = "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
     r = requests.get(url, timeout=10)
-    soup = BeautifulSoup(r.text, "html.parser")  # 改這行
-
+    soup = BeautifulSoup(r.text, "html.parser")
     items = soup.find_all("item")[:8]
     news_html = ""
     for item in items:
@@ -36,16 +40,12 @@ def fetch_news():
         news_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return news_html
 
-
-# === 3. 政經局勢 ===
+# === 3. 政經局勢（Reuters World） ===
 def fetch_geo():
     url = "https://www.reuters.com/world/"
     r = requests.get(url, timeout=10)
     soup = BeautifulSoup(r.text, "html.parser")
-
-    # 找出文章清單
     articles = soup.select("a[href*='/world/']")[:8]
-
     geo_html = ""
     for a in articles:
         title = a.get_text(strip=True)
@@ -53,21 +53,19 @@ def fetch_geo():
         geo_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return geo_html
 
-
-# === 4. 讀取 index.html 並替換內容 ===
+# === 4. 更新 index.html ===
 def update_html():
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     with open("index.html", "r", encoding="utf-8") as f:
         html = f.read()
 
-    html = html.replace(
-        "正在等待資料更新...",
-        ""
-    )
+    # 先刪掉原本資料（如果有）
+    import re
+    html = re.sub(r"<h2>📈 全球股市指數.*</body>", "</body>", html, flags=re.S)
 
-    html = html.replace(
-        "</body>",
-        f"""
-<h2>📈 全球股市指數（更新時間：{datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}）</h2>
+    # 插入新資料
+    new_content = f"""
+<h2>📈 全球股市指數（更新時間：{now}）</h2>
 <ul>
 {fetch_markets()}
 </ul>
@@ -81,12 +79,13 @@ def update_html():
 <ul>
 {fetch_geo()}
 </ul>
-
 </body>
 """
-    )
-
+    html = html.replace("</body>", new_content)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
 
-update_html()
+if __name__ == "__main__":
+    update_html()
+    print("首頁更新完成 ✅")
+
