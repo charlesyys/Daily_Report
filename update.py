@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 import datetime
 import re
+import xml.etree.ElementTree as ET
 
 # === 全球主要股市即時價格 ===
 markets = {
@@ -32,7 +33,7 @@ RSS_LIST_EN = [
     ("BBC World", "http://feeds.bbci.co.uk/news/world/rss.xml"),
     ("CNN Top Stories", "http://rss.cnn.com/rss/edition.rss"),
     # Reuters 官方 HTTPS RSS，如果解析失敗會跳過
-    ("Reuters World", "https://www.reuters.com/rssFeed/worldNews")
+    #("Reuters World", "https://www.reuters.com/rssFeed/worldNews")
 ]
 
 def fetch_rss_news(rss_list):
