@@ -26,7 +26,7 @@ def fetch_markets():
 def fetch_news():
     url = "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
     r = requests.get(url, timeout=10)
-    soup = BeautifulSoup(r.text, "xml")
+    soup = BeautifulSoup(r.text, "html.parser")  # 改這行
 
     items = soup.find_all("item")[:8]
     news_html = ""
@@ -35,6 +35,7 @@ def fetch_news():
         link = item.link.text
         news_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return news_html
+
 
 # === 3. 政經局勢 ===
 def fetch_geo():
