@@ -6,7 +6,7 @@ import datetime
 import re
 
 # === 確保 index.htm 存在 ===
-html_path = "index.htm"
+html_path = "index.html"
 if not os.path.exists(html_path):
     with open(html_path, "w", encoding="utf-8") as f:
         f.write("""<!DOCTYPE html>
