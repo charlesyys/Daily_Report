@@ -1,82 +1,32 @@
-<!doctype html>
-<html lang="zh-Hant">
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>老查的每日全球市場與新聞總覽</title>
-  <style>
-    body{
-      font-family:-apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
-      padding:20px; background:#fafafa;
-    }
-    h1{font-size:1.6rem;margin-bottom:6px;}
-    .updated{color:#666;margin-bottom:15px;}
-    .card{
-      background:#fff;padding:15px;margin:12px 0;border-radius:10px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.05);
-    }
-    .card h2{font-size:1.2rem;margin-bottom:10px;}
-    .item{margin-bottom:8px;}
-    .meta{color:#888;font-size:0.85rem;}
-    a{color:#0066cc;}
-  </style>
+<meta charset="UTF-8">
+<title>Daily Report</title>
 </head>
 <body>
-  <h1>🌏 老查的每日全球市場 / 政經 / 新聞總覽</h1>
-  <div class="updated">最後更新：<span id="updated">-</span></div>
+<h1>每日國際經濟與新聞報告</h1>
 
-  <div class="card">
-    <h2>📈 世界主要股市指數</h2>
-    <div id="indices"></div>
-  </div>
+<!-- 全球股市指數 -->
+<h2>📈 全球股市指數</h2>
+<ul>
+<!-- 更新時會自動替換這裡內容 -->
+</ul>
 
-  <div class="card">
-    <h2>🌐 政經要點</h2>
-    <div id="economy"></div>
-  </div>
+<!-- 英文新聞 -->
+<h2>📰 國際重大新聞（英文）</h2>
+<ul>
+</ul>
 
-  <div class="card">
-    <h2>📰 全球重大新聞</h2>
-    <div id="news"></div>
-  </div>
+<!-- 中文新聞 -->
+<h2>📰 國際重大新聞（中文）</h2>
+<ul>
+</ul>
 
-<script>
-async function load(){
-  try{
-    const r = await fetch('./data/data.json', {cache:"no-store"});
-    const j = await r.json();
-
-    document.getElementById("updated").textContent = j.updated_local || "-";
-
-    // 指數
-    const idx = document.getElementById("indices");
-    idx.innerHTML = (j.indices||[]).map(i=>`
-      <div class="item">
-        <strong>${i.name}</strong>：${i.price} （${i.change_pct}%）
-        <div class="meta">${i.time}</div>
-      </div>
-    `).join('');
-
-    // 政經
-    const eco = document.getElementById("economy");
-    eco.innerHTML = (j.economy||[]).map(e=>`<div class="item">${e}</div>`).join('');
-
-    // 新聞
-    const nw = document.getElementById("news");
-    nw.innerHTML = (j.news||[]).slice(0,10).map(n=>`
-      <div class="item">
-        <a href="${n.url}" target="_blank">${n.title}</a>
-        <div class="meta">${n.source} · ${n.published_at}</div>
-      </div>
-    `).join('');
-
-  }catch(e){
-    console.error(e);
-    document.body.innerHTML = "讀取資料錯誤，請稍後再試。";
-  }
-}
-load();
-</script>
+<!-- 政經局勢摘要 -->
+<h2>🌐 政經局勢摘要</h2>
+<ul>
+</ul>
 
 </body>
 </html>
