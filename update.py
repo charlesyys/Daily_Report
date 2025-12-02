@@ -29,17 +29,42 @@ def fetch_markets():
 # === 2. 國際重大新聞（Google News RSS） ===
 def fetch_news():
     url = "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
+
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/123.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/xml,application/xml,application/xhtml+xml",
+        "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+        "Referer": "https://news.google.com/",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+        "Connection": "keep-alive"
     }
-    r = requests.get(url, headers=headers, timeout=10)
-    soup = BeautifulSoup(r.text, "html.parser")
-    items = soup.find_all("item")[:8]
+
+    # ★ 禁止 redirect，把 example.com 擋掉
+    r = requests.get(url, headers=headers, timeout=10, allow_redirects=False)
+
+    # ★ 如果被偷偷轉址，直接錯誤提醒
+    if r.status_code in (301, 302, 303, 307, 308):
+        raise Exception("Google RSS 被 redirect → 可能被風控，需要換 IP 或 Proxy")
+
+    text = r.text.strip()
+    if "Example Domain" in text:
+        raise Exception("⚠️ RSS 被反爬蟲導向 example.com！需要更強 headers 或 proxy")
+
+    soup = BeautifulSoup(text, "xml")
+
+    items = soup.find_all("item")[:10]
     news_html = ""
+
     for item in items:
         title = item.title.text
         link = item.link.text
         news_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
+
     return news_html
 
 # === 3. 政經局勢（Reuters World） ===
