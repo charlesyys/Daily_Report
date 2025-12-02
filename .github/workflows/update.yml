@@ -2,30 +2,36 @@ name: Daily Report Update
 
 on:
   schedule:
-    - cron: '0 22 * * *'  # UTC 時間 22:00 → 台灣 06:00
+    - cron: '0 22 * * *'  # UTC 22:00 → 台灣 06:00
   workflow_dispatch:     # 可以手動觸發
 
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
+      # 1️⃣ 下載 repo
       - uses: actions/checkout@v3
 
+      # 2️⃣ 設定 Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      # 3️⃣ 安裝依賴
       - name: Install dependencies
         run: pip install requests yfinance beautifulsoup4
 
+      # 4️⃣ 執行更新程式
       - name: Run update script
         run: python update.py
 
+      # 5️⃣ Commit & Push
       - name: Commit & Push changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add index.htm
-          git commit -m "Daily auto update"
-          git push
+          git commit -m "Daily auto update" || echo "No changes to commit"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
