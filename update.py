@@ -42,12 +42,16 @@ def fetch_geo():
     r = requests.get(url, timeout=10)
     soup = BeautifulSoup(r.text, "html.parser")
 
-    articles = soup.select("a.story-title, h3.story-title, h2")[:8]
+    # 找出文章清單
+    articles = soup.select("a[href*='/world/']")[:8]
+
     geo_html = ""
     for a in articles:
         title = a.get_text(strip=True)
-        geo_html += f"<li>{title}</li>"
+        link = "https://www.reuters.com" + a.get("href")
+        geo_html += f"<li><a href='{link}' target='_blank'>{title}</a></li>"
     return geo_html
+
 
 # === 4. 讀取 index.html 並替換內容 ===
 def update_html():
