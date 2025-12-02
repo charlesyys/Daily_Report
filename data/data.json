@@ -1,0 +1,29 @@
+{
+  "updated_local": "2025-12-02 06:00:00",
+  "indices": [
+    {"name": "S&P 500", "price": 5100.25, "change_pct": 0.22, "time": "2025-12-02"},
+    {"name": "NASDAQ", "price": 16020.55, "change_pct": -0.15, "time": "2025-12-02"},
+    {"name": "DOW", "price": 38520.11, "change_pct": 0.08, "time": "2025-12-02"},
+    {"name": "台股加權", "price": 20500.77, "change_pct": 0.65, "time": "2025-12-02"}
+  ],
+  "economy": [
+    "美國本週公布就業數據，市場預期維持強勁。",
+    "日本央行暗示可能調整超寬鬆政策。",
+    "台灣出口連五升，電子需求回溫。",
+    "中國加大刺激政策，市場觀望效果。"
+  ],
+  "news": [
+    {
+      "title": "全球科技股繼續領漲，美國市場情緒樂觀",
+      "url": "https://example.com/news1",
+      "source": "Reuters",
+      "published_at": "2025-12-01"
+    },
+    {
+      "title": "亞洲經濟體展望改善，韓國與台灣領頭",
+      "url": "https://example.com/news2",
+      "source": "Bloomberg",
+      "published_at": "2025-12-01"
+    }
+  ]
+}
