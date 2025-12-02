@@ -1,8 +1,37 @@
+import os
 import requests
 from bs4 import BeautifulSoup
 import yfinance as yf
 import datetime
 import re
+
+# === 確保 index.htm 存在 ===
+html_path = "index.htm"
+if not os.path.exists(html_path):
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write("""<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>Daily Report</title>
+</head>
+<body>
+<h1>每日國際經濟與新聞報告</h1>
+
+<h2>📈 全球股市指數</h2>
+<ul></ul>
+
+<h2>📰 國際重大新聞（英文）</h2>
+<ul></ul>
+
+<h2>📰 國際重大新聞（中文）</h2>
+<ul></ul>
+
+<h2>🌐 政經局勢摘要</h2>
+<ul></ul>
+
+</body>
+</html>""")
 
 # === 全球主要股市即時價格 ===
 markets = {
@@ -76,18 +105,17 @@ def fetch_geo():
 
 # === 更新 index.htm ===
 def update_html():
-    html_path = "index.htm"
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
 
-    # 刪除舊資料
+    # 刪除舊資料區塊
     html = re.sub(r"<h2>📈 全球股市指數.*?<\/ul>", "", html, flags=re.S)
     html = re.sub(r"<h2>📰 國際重大新聞（英文）.*?<\/ul>", "", html, flags=re.S)
     html = re.sub(r"<h2>📰 國際重大新聞（中文）.*?<\/ul>", "", html, flags=re.S)
     html = re.sub(r"<h2>🌐 政經局勢摘要.*?<\/ul>", "", html, flags=re.S)
 
-    # 新內容
+    # 新資料
     new_content = f"""
 <h2>📈 全球股市指數（更新時間：{now}）</h2>
 <ul>
