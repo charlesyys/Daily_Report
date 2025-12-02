@@ -1,32 +1,38 @@
 name: Daily Report Update
 
+# 每天早上 06:00 執行（UTC+8 → 22:00 UTC 前一天）
 on:
   schedule:
-    - cron: '0 22 * * *'  # UTC 22:00 → 台灣 06:00
-  workflow_dispatch:     # 可手動觸發
+    - cron: '0 22 * * *'
+  workflow_dispatch:  # 允許手動觸發
 
 jobs:
   update:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install requests yfinance beautifulsoup4
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 yfinance
 
-      - name: Run update script
-        run: python update.py
+    - name: Run update script
+      run: python update.py
 
-      - name: Commit & Push changes
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add index.htm
-          git commit -m "Daily auto update" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+    - name: Commit and Push changes
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add index.htm
+        git commit -m "Daily auto update" || echo "No changes to commit"
+        git push https://$GH_TOKEN@github.com/${{ github.repository }}.git HEAD:main
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
