@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>每日股市與新聞總覽（測試版）</title>
+  <style>
+    body{
+      font-family: system-ui, -apple-system, "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      padding:20px;
+    }
+    h1{font-size:1.6rem}
+    .card{
+      border:1px solid #eee;
+      border-radius:8px;
+      padding:12px;
+      margin:8px 0;
+    }
+    .meta{
+      color:#666;
+      font-size:0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>每日股市 / 政經 / 重大新聞（測試版｜最後更新：<span id="updated">-</span>）</h1>
+
+  <div id="indices" class="card">
+    <strong>指數</strong>
+    <div id="indices-list"></div>
+  </div>
+
+  <div id="economy" class="card">
+    <strong>政經重點</strong>
+    <div id="economy-list"></div>
+  </div>
+
+  <div id="news" class="card">
+    <strong>重大新聞</strong>
+    <div id="news-list"></div>
+  </div>
+
+  <script>
+    async function load(){
+      try{
+        const r = await fetch('../data/data.json', {cache: "no-store"});
+        if(!r.ok) throw new Error('抓取 data.json 失敗');
+
+        const j = await r.json();
+
+        // 更新時間
+        document.getElementById('updated').textContent =
+          j.updated_local || j.updated || '-';
+
+        // 指數
+        const list = document.getElementById('indices-list');
+        list.innerHTML = '';
+        (j.indices || []).forEach(it=>{
+          const el = document.createElement('div');
+          el.innerHTML =
+            `<div>${it.name}: <strong>${it.price}</strong> (${it.change_pct})
+             <div class="meta">${it.time}</div></div>`;
+          list.appendChild(el);
+        });
+
+        // 政經
+        const eco = document.getElementById('economy-list');
+        eco.innerHTML = (j.economy && Array.isArray(j.economy))
+          ? j.economy.map(s=>`<div>${s}</div>`).join('')
+          : JSON.stringify(j.economy);
+
+        // 新聞
+        const newsEl = document.getElementById('news-list');
+        newsEl.innerHTML = '';
+        (j.news || []).slice(0,10).forEach(n=>{
+          const div = document.createElement('div');
+          div.innerHTML =
+            `<a href="${n.url}" target="_blank">${n.title}</a>
+             <div class="meta">${n.source} · ${n.published_at}</div>`;
+          newsEl.appendChild(div);
+        });
+
+      }catch(e){
+        console.error(e);
+        document.getElementById('indices-list').textContent = '讀取資料錯誤';
+      }
+    }
+
+    load();
+  </script>
+
+</body>
+</html>
