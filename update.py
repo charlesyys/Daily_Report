@@ -93,8 +93,12 @@ def update_html():
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
 
-    import re
-    html = re.sub(r"<h2>📈 全球股市指數.*</body>", "</body>", html, flags=re.S)
+    # 找到 <body> 後第一個 <h2>📈 全球股市指數 的位置
+    body_start, sep, _ = html.partition("<h2>📈 全球股市指數")
+    head_part, sep_head, _ = body_start.partition("<body>")
+    
+    # 保留 <head> 區塊，只從 <body> 開始插入新資料
+    html = head_part + sep_head  
 
     new_block = f"""
 <h2>📈 全球股市指數（更新時間：{now}）</h2>
