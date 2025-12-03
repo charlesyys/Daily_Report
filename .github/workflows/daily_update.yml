@@ -3,7 +3,7 @@ name: Daily Report Update
 # 每天早上 06:00 執行（UTC+8 → UTC 22:00 前一天）
 on:
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '*/30 * * * *'   # UTC，每 30 分鐘
   workflow_dispatch:  # 允許手動觸發
 
 jobs:
