@@ -1,0 +1,32 @@
+name: Test Daily Update
+
+on:
+  workflow_dispatch:   # 手動觸發
+
+jobs:
+  update-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    - name: Install dependencies
+      run: |
+        pip install requests yfinance
+
+    - name: Run test update
+      run: python update_test.py
+
+    - name: Commit test result
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add test/index.html
+        git commit -m "Test page auto-update" || echo "No changes"
+        git push
