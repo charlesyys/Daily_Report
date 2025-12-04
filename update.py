@@ -60,6 +60,19 @@ def fetch_rss_news(rss_list):
     return html
 
 # === 中文新聞 RSS (中央社國際) ===
+RSS_LIST_CN = [
+    # 國際與綜合 (中央社 - 保持)
+    ("中央社 國際", "https://feeds.feedburner.com/rsscna/intworld"),
+    # 國際與綜合 (東森新聞)
+    ("東森新聞 焦點", "https://news.ebc.net.tw/Rss/news"),
+    # Google
+    ("Google News 台灣焦點", "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
+    # 財經專業 (ETtoday 財經)
+    ("ETtoday 財經", "https://feeds.feedburner.com/ettoday/finance"),
+    # 新增: 台灣證券交易所)
+    #("台灣股市焦點", "https://www.taifex.com.tw/cht/11/RSS2")
+]
+
 def fetch_cn_news():
     """從中央社國際獲取中文新聞"""
     name = "中央社國際"
@@ -123,10 +136,8 @@ def update_html():
 <ul>{fetch_rss_news(RSS_LIST_EN)}</ul>
 
 <h2>📰 國際重大新聞（中文）</h2>
-<ul>{fetch_cn_news()}</ul>
+<ul>{fetch_rss_news(RSS_LIST_CN)}</ul>
 
-<h2>🌐 政經局勢摘要</h2>
-<ul>{fetch_geo()}</ul>
 </body>
 """
     html += new_block
@@ -135,7 +146,8 @@ def update_html():
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print("首頁更新完成 ✅")
+    #print("首頁更新完成 ✅")
+    print(f"首頁更新完成，時間：{now_str} ✅")
 
 if __name__ == "__main__":
     update_html()
