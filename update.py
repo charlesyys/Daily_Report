@@ -4,6 +4,7 @@ import yfinance as yf
 import datetime
 import re
 import xml.etree.ElementTree as ET
+import pytz # 🚨 新增：用於時區處理
 
 # === 全球主要股市即時價格 ===
 markets = {
@@ -17,10 +18,12 @@ markets = {
 }
 
 def fetch_markets():
+    """獲取股市數據並格式化為 HTML 列表"""
     rows = ""
     for name, symbol in markets.items():
         ticker = yf.Ticker(symbol)
         try:
+            # yfinance 的 fast_info 提供了快速獲取最新價格的方式
             price = ticker.fast_info["lastPrice"]
             price = round(price, 2)
             rows += f"<li>{name}: {price}</li>"
@@ -37,23 +40,28 @@ RSS_LIST_EN = [
 ]
 
 def fetch_rss_news(rss_list):
+    """從 RSS 連結獲取新聞並格式化為 HTML 列表"""
     html = ""
     for name, url in rss_list:
         try:
             r = requests.get(url, timeout=10)
             r.encoding = r.apparent_encoding
+            # 使用 ET.fromstring 處理 XML
             root = ET.fromstring(r.text)
             items = root.findall(".//item")[:20]
+            # 尋找前 20 條新聞
             for item in items:
                 title = item.find("title").text if item.find("title") is not None else "無標題"
                 link = item.find("link").text if item.find("link") is not None else "#"
                 html += f'<li><a href="{link}" target="_blank">{title}</a> <small>({name})</small></li>\n'
         except Exception as e:
+            # 錯誤處理
             html += f"<li>{name} 讀取失敗: {e}</li>\n"
     return html
 
 # === 中文新聞 RSS (中央社國際) ===
 def fetch_cn_news():
+    """從中央社國際獲取中文新聞"""
     name = "中央社國際"
     url = "https://feeds.feedburner.com/rsscna/intworld"
     html = ""
@@ -88,7 +96,14 @@ def fetch_geo():
 
 # === 更新首頁 ===
 def update_html():
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    # now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    # 🚨 修正時區問題：使用 pytz 獲取 Asia/Taipei (CST/GMT+8) 時間
+    taipei_tz = pytz.timezone('Asia/Taipei') 
+    now_taipei = datetime.datetime.now(taipei_tz)
+    
+    # 格式化時間戳
+    now_str = now_taipei.strftime("%Y-%m-%d %H:%M:%S (CST/GMT+8)")
+    
     html_path = "index.html"
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
