@@ -64,6 +64,7 @@ RSS_LIST_CN = [
     # 國際與綜合 (中央社 - 保持)
     ("中央社 國際", "https://feeds.feedburner.com/rsscna/intworld"),
     ("台灣美食", "https://news.google.com/rss/search?q=美食?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
+    ("汽車新聞", "https://news.google.com/rss/search?q=汽車?機車?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
     ("生活智慧", "https://news.google.com/rss/search?q=生活智慧?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
     # Google
     ("Google News 台灣焦點", "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
