@@ -18,17 +18,32 @@ markets = {
 }
 
 def fetch_markets():
-    """獲取股市數據並格式化為 HTML 列表"""
     rows = ""
     for name, symbol in markets.items():
         ticker = yf.Ticker(symbol)
         try:
-            # yfinance 的 fast_info 提供了快速獲取最新價格的方式
-            price = ticker.fast_info["lastPrice"]
-            price = round(price, 2)
-            rows += f"<li>{name}: {price}</li>"
-        except:
-            rows += f"<li>{name}: 讀取失敗</li>"
+            last_price = ticker.fast_info["lastPrice"]
+            prev_close = ticker.fast_info["previousClose"]
+
+            last_price = round(last_price, 2)
+            prev_close = round(prev_close, 2)
+
+            diff = round(last_price - prev_close, 2)
+            pct = round(diff / prev_close * 100, 2) if prev_close != 0 else 0
+
+            # 顏色：漲→紅，跌→綠，平盤→灰
+            color = "red" if diff > 0 else ("green" if diff < 0 else "gray")
+
+            rows += f"""
+<li>
+  {name}: {last_price}
+  <span style="color:{color}; font-weight:bold;">
+    ({'+' if diff > 0 else ''}{diff} / {'+' if pct > 0 else ''}{pct}%)
+  </span>
+</li>
+"""
+        except Exception as e:
+            rows += f"<li>{name}: 讀取失敗 ({e})</li>"
     return rows
 
 # === 英文新聞 RSS ===
