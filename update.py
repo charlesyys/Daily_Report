@@ -144,15 +144,65 @@ def update_html():
     # 保留 <head> 區塊，只從 <body> 開始插入新資料
     html = head_part + sep_head  
 
+     # === 語音播放 JavaScript ===
+    tts_script = """
+    <script>
+    function readNews(type) {
+        let text = "";
+
+        if (type === "cn") {
+            const items = document.querySelectorAll("#news-cn li");
+            items.forEach(li => text += li.innerText + "。");
+            speak(text, "zh-TW");    // 中文語音
+        }
+
+        if (type === "en") {
+            const items = document.querySelectorAll("#news-en li");
+            items.forEach(li => text += li.innerText + ". ");
+            speak(text, "en-US");    // 英文語音
+        }
+    }
+
+    function speak(text, lang) {
+        if (!window.speechSynthesis) {
+            alert("你的瀏覽器不支援語音播放");
+            return;
+        }
+
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = lang;
+        msg.rate = 1.0;
+        msg.pitch = 1.0;
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(msg);
+    }
+    </script>
+    """
+
+
+    
+    # 建立新區塊
     new_block = f"""
+<h1 style="font-size:36px; font-weight:bold; margin: 10px 0;">
+    老查的即時新聞
+</h1>
+
 <h2>📈 全球股市指數（更新時間：{now_str}）</h2>
 <ul>{fetch_markets()}</ul>
 
-<h2>📰 國際重大新聞（英文）</h2>
-<ul>{fetch_rss_news(RSS_LIST_EN)}</ul>
+<h2>📰 國際重大新聞（英文）
+    <button onclick="readNews('en')">🔊 播放英文新聞</button>
+</h2>
+<ul id="news-en">{fetch_rss_news(RSS_LIST_EN)}</ul>
 
-<h2>📰 國際重大新聞（中文）</h2>
-<ul>{fetch_rss_news(RSS_LIST_CN)}</ul>
+<h2>📰 國際重大新聞（中文）
+    <button onclick="readNews('cn')">🔊 播放中文新聞</button>
+</h2>
+<ul id="news-cn">{fetch_rss_news(RSS_LIST_CN)}</ul>
+
+{tts_script}
+
 
 </body>
 """
