@@ -144,41 +144,66 @@ def update_html():
     # 保留 <head> 區塊，只從 <body> 開始插入新資料
     html = head_part + sep_head  
 
-     # === 語音播放 JavaScript ===
+    # === 語音播放 JavaScript ===
     tts_script = """
     <script>
-    function readNews(type) {
-        let text = "";
+    let speaking = {
+        'cn': false,
+        'en': false
+    };
+    let currentUtterance = null;
 
-        if (type === "cn") {
-            const items = document.querySelectorAll("#news-cn li");
-            items.forEach(li => text += li.innerText + "。");
-            speak(text, "zh-TW");    // 中文語音
-        }
-
-        if (type === "en") {
-            const items = document.querySelectorAll("#news-en li");
-            items.forEach(li => text += li.innerText + ". ");
-            speak(text, "en-US");    // 英文語音
-        }
-    }
-
-    function speak(text, lang) {
-        if (!window.speechSynthesis) {
-            alert("你的瀏覽器不支援語音播放");
+    function toggleReadNews(type) {
+        // 停止播放
+        if (speaking[type]) {
+            window.speechSynthesis.cancel();
+            speaking[type] = false;
+            updateButton(type, false);
             return;
         }
 
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = lang;
-        msg.rate = 1.0;
-        msg.pitch = 1.0;
+        // 準備朗讀文字
+        let text = "";
+        let lang = (type === "cn") ? "zh-TW" : "en-US";
+        let selector = (type === "cn") ? "#news-cn li" : "#news-en li";
 
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(msg);
+        const items = document.querySelectorAll(selector);
+        items.forEach(li => text += li.innerText + (type === "cn" ? "。" : ". "));
+
+        // 開始語音播放
+        currentUtterance = new SpeechSynthesisUtterance(text);
+        currentUtterance.lang = lang;
+        currentUtterance.rate = 1.0;
+
+        // 播放時更新按鈕狀態
+        currentUtterance.onstart = () => {
+            speaking[type] = true;
+            updateButton(type, true);
+        };
+
+        // 播放結束（自然播放完）
+        currentUtterance.onend = () => {
+            speaking[type] = false;
+            updateButton(type, false);
+        };
+
+        window.speechSynthesis.cancel(); 
+        window.speechSynthesis.speak(currentUtterance);
+    }
+
+    function updateButton(type, isPlaying) {
+        let btn = document.getElementById("btn-" + type);
+        if (!btn) return;
+
+        if (isPlaying) {
+            btn.innerText = (type === "cn") ? "⏹ 停止播放" : "⏹ Stop";
+        } else {
+            btn.innerText = (type === "cn") ? "🔊 播放中文新聞" : "🔊 Play English News";
+        }
     }
     </script>
     """
+    
 
 
     
@@ -192,12 +217,12 @@ def update_html():
 <ul>{fetch_markets()}</ul>
 
 <h2>📰 國際重大新聞（英文）
-    <button onclick="readNews('en')">🔊 播放英文新聞</button>
+    <button id="btn-en" onclick="toggleReadNews('en')">🔊 Play English News</button>
 </h2>
 <ul id="news-en">{fetch_rss_news(RSS_LIST_EN)}</ul>
 
 <h2>📰 國際重大新聞（中文）
-    <button onclick="readNews('cn')">🔊 播放中文新聞</button>
+    <button id="btn-cn" onclick="toggleReadNews('cn')">🔊 播放中文新聞</button>
 </h2>
 <ul id="news-cn">{fetch_rss_news(RSS_LIST_CN)}</ul>
 
