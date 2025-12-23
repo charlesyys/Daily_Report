@@ -78,9 +78,11 @@ def fetch_rss_news(rss_list):
 RSS_LIST_CN = [
     # 國際與綜合 (中央社 - 保持)
     ("中央社 國際", "https://feeds.feedburner.com/rsscna/intworld"),
-    ("台灣美食", "https://news.google.com/rss/search?q=美食&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
+    ("台灣美食", "https://news.google.com/rss/search?q=美食&古早味&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
     ("汽車新聞", "https://news.google.com/rss/search?q=汽車&機車&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
-    ("生活智慧", "https://news.google.com/rss/search?q=生活智慧&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
+    ("智慧科技", "https://news.google.com/rss/search?q=智慧科技&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
+    # Google
+    ("居家生活", "https://news.google.com/rss/search?q=居家生活&清潔&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
     # Google
     ("Google News 台灣焦點", "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
     # 財經專業 (ETtoday 財經)
