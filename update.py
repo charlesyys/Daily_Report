@@ -82,6 +82,8 @@ RSS_LIST_CN = [
     ("汽車新聞", "https://news.google.com/rss/search?q=汽車&機車&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
     ("智慧科技", "https://news.google.com/rss/search?q=智慧科技&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
     # Google
+    ("股市財經新聞", "https://news.google.com/rss/search?q=股票&財經&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
+    # Google
     ("居家生活", "https://news.google.com/rss/search?q=居家生活&清潔&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
     # Google
     ("Google News 台灣焦點", "https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant"),
